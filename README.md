@@ -1,5 +1,5 @@
 # Linux System Activity Monitor
-
+Comment
 A real-time desktop application that reads live system data from the Linux `/proc` virtual filesystem and displays it in a Qt 6 graphical interface. Built as a university OOP 2 course project (MSC1052, Spring 2026) to demonstrate every major C++ object-oriented programming concept taught during the semester.
 
 ---
