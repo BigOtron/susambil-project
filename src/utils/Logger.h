@@ -1,20 +1,17 @@
 /*
- * Logger.h
+* Logger.h
  * ========
- * Description: Singleton logger class that writes timestamped messages to a log file.
- *              Demonstrates static members, static factory method, and file output.
+ * Singleton logger class that writes timestamped messages to a log file.
  *
- * OOP Concepts Demonstrated:
+ * OOP Concepts:
  *   - Static members (instance pointer, message counter)
  *   - Static factory method (getInstance)
- *   - Encapsulation (private constructor — singleton pattern)
- *   - File I/O (ofstream)
- *   - Destructor (closes log file)
- *
- * Lecture Reference: Lecture 3 (Static Members), Lecture 10 (File I/O)
+ *   - Encapsulation via private constructor (singleton pattern)
+ *   - File I/O with ofstream
+ *   - Destructor for clean file close
  *
  * Author: OOP 2 Project Team
- * Course: OOP 2 (MSC1052) — Spring 2026
+ * Course: OOP 2  — Spring 2026
  */
 
 #pragma once
@@ -22,45 +19,40 @@
 #include <string>
 #include <fstream>
 
-/**
- * @class Logger
- * @brief Singleton logger that writes to a file and counts messages.
- *
- * Demonstrates: static members, static factory, encapsulation, file output.
- * Corresponds to: Lectures 3, 10
- */
+using namespace std;
+
 class Logger {
 private:
-    // [STATIC MEMBER] single shared instance (singleton pattern)
+    // Only one Logger can exist — this holds that single instance
     static Logger* instance;
 
-    // [STATIC MEMBER] total messages logged — shared across all code paths
+    // Counts every message logged across the whole program
     static int messageCount;
 
-    // [ENCAPSULATION] file stream — private, managed only by this class
-    std::ofstream logFile;
+    // The actual file we write logs into — only this class touches it
+    ofstream logFile;
 
-    // [ENCAPSULATION] private constructor — prevents direct instantiation
+    // Private so nothing outside this class can create a Logger directly
     Logger();
 
 public:
-    // [STATIC MEMBER] factory method — creates or returns the singleton instance
+    // Returns the one shared Logger, creating it on the first call
     static Logger* getInstance();
 
-    // [STATIC MEMBER] returns the total number of messages logged so far
+    // Returns how many messages have been logged so far
     static int getMessageCount();
 
-    // Log a message at a given severity level
-    void log(const std::string& level, const std::string& message);
+    // Writes a message with a severity level (INFO, ERROR, WARNING)
+    void log(const string& level, const string& message);
 
-    void logInfo   (const std::string& msg);
-    void logError  (const std::string& msg);
-    void logWarning(const std::string& msg);
+    void logInfo   (const string& msg);
+    void logError  (const string& msg);
+    void logWarning(const string& msg);
 
-    // [DESTRUCTOR] closes the log file on program exit
+    // Closes the log file cleanly when the program exits
     ~Logger();
 
-    // Prevent copy and assignment — singleton must not be duplicated
+    // Copying a singleton makes no sense — both deleted to prevent accidents
     Logger(const Logger&)            = delete;
     Logger& operator=(const Logger&) = delete;
 };

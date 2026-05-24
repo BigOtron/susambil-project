@@ -1,19 +1,17 @@
 /*
  * main.cpp
  * ========
- * Description: Entry point for Linux System Activity Monitor.
- *              Creates QApplication, initializes the Logger singleton,
- *              instantiates MainWindow, and starts the Qt event loop.
+ * Entry point for the Linux System Activity Monitor.
+ * Sets up the Qt app, starts the logger, launches the main window,
+ * and runs the event loop until the user closes the program.
  *
- * OOP Concepts Demonstrated:
+ * OOP Concepts:
  *   - Static member access (Logger::getInstance)
- *   - Exception handling at the top level (catch fatal errors)
- *   - Object lifetime (MainWindow on stack — destructor called on exit)
- *
- * Lecture Reference: Lecture 12 (Qt Application Entry Point)
+ *   - Exception handling for fatal errors at the top level
+ *   - Stack object lifetime (MainWindow destructor runs on exit)
  *
  * Author: OOP 2 Project Team
- * Course: OOP 2 (MSC1052) — Spring 2026
+ * Course: OOP 2  — Spring 2026
  */
 
 #include <QApplication>
@@ -21,18 +19,20 @@
 #include "src/utils/Logger.h"
 #include "src/core/MonitorExceptions.h"
 
+using namespace std;
+
 int main(int argc, char* argv[]) {
-    // [Qt] QApplication manages the GUI event loop
+    // Qt requires a QApplication object before any GUI work can happen
     QApplication app(argc, argv);
     app.setApplicationName("Linux System Activity Monitor");
     app.setApplicationVersion("1.0");
     app.setOrganizationName("OOP2 MSC1052");
 
-    // [STATIC MEMBER] Logger::getInstance() — initialize the singleton before anything else
+    // Start the logger first so every event from here on gets recorded
     Logger::getInstance()->logInfo("=== Application starting ===");
 
     try {
-        // [OBJECT] MainWindow created on the stack — destructor called automatically
+        // MainWindow lives on the stack — Qt and the destructor clean it up on exit
         MainWindow window;
         window.setWindowTitle("Linux System Activity Monitor");
         window.resize(1280, 720);
@@ -40,20 +40,20 @@ int main(int argc, char* argv[]) {
 
         Logger::getInstance()->logInfo("Event loop starting");
 
-        // [Qt] enter the event loop — blocks until the window is closed
+        // Hands control to Qt — stays here until the window is closed
         int result = app.exec();
 
         Logger::getInstance()->logInfo("Event loop exited with code "
-                                       + std::to_string(result));
+                                       + to_string(result));
         return result;
 
     } catch (const MonitorException& e) {
-        // [EXCEPTION] fatal application error — log and exit
-        Logger::getInstance()->logError(std::string("FATAL MonitorException: ") + e.what());
+        // Something went badly wrong inside our own code
+        Logger::getInstance()->logError(string("FATAL MonitorException: ") + e.what());
         return 1;
-    } catch (const std::exception& e) {
-        // [EXCEPTION] catch any remaining standard exceptions at the top level
-        Logger::getInstance()->logError(std::string("FATAL std::exception: ") + e.what());
+    } catch (const exception& e) {
+        // Catch anything else we didn't anticipate (bad_alloc, etc.)
+        Logger::getInstance()->logError(string("FATAL std::exception: ") + e.what());
         return 1;
     }
 }

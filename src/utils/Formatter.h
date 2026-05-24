@@ -1,19 +1,14 @@
 /*
  * Formatter.h
  * ===========
- * Description: Function templates and overloaded formatting helpers.
- *              Provides clamp<T>, calculatePercent<T>, findIndex<T>, and
- *              overloaded formatValue() for compile-time polymorphism.
+ * General-purpose template functions and overloaded helpers for formatting.
  *
- * OOP Concepts Demonstrated:
+ * OOP Concepts:
  *   - Function templates (clamp, calculatePercent, findIndex)
  *   - Compile-time polymorphism via function overloading (formatValue)
- *   - Template specialization concept
- *
- * Lecture Reference: Lecture 9 (Templates), Lecture 7 (Polymorphism)
  *
  * Author: OOP 2 Project Team
- * Course: OOP 2 (MSC1052) — Spring 2026
+ * Course: OOP 2 — Spring 2026
  */
 
 #pragma once
@@ -24,14 +19,14 @@
 #include <iomanip>
 #include <cmath>
 
-// ============================================================================
-// FUNCTION TEMPLATES — Lecture 9
-// ============================================================================
+using namespace std;
 
-/**
- * @brief Clamps value into [minVal, maxVal]. Works with any comparable type.
- * [FUNCTION TEMPLATE] compile-time polymorphism
- */
+// ─────────────────────────────────────────────
+// TEMPLATE FUNCTIONS
+// ─────────────────────────────────────────────
+
+// Keeps a value within [minVal, maxVal] range.
+// Example: clamp(150, 0, 100) returns 100
 template <typename T>
 T clamp(T value, T minVal, T maxVal) {
     if (value < minVal) return minVal;
@@ -39,86 +34,67 @@ T clamp(T value, T minVal, T maxVal) {
     return value;
 }
 
-/**
- * @brief Calculates what percentage 'part' is of 'total'.
- * Returns 0.0 if total is zero to avoid division by zero.
- * [FUNCTION TEMPLATE] works with any numeric type
- */
+// Calculates what percentage 'part' is out of 'total'.
+// Returns 0.0 when total is zero to avoid division by zero.
 template <typename T>
 double calculatePercent(T part, T total) {
     if (total == static_cast<T>(0)) return 0.0;
     return (static_cast<double>(part) / static_cast<double>(total)) * 100.0;
 }
 
-/**
- * @brief Searches a vector for target using operator== on T.
- * Returns the index, or -1 if not found.
- * [FUNCTION TEMPLATE] requires T to have operator==
- */
+// Searches a vector for a target value and returns its index.
+// Returns -1 if the target is not found.
 template <typename T>
-int findIndex(const std::vector<T>& vec, const T& target) {
+int findIndex(const vector<T>& vec, const T& target) {
     for (int i = 0; i < static_cast<int>(vec.size()); ++i) {
-        if (vec[i] == target) return i;   // [OPERATOR OVERLOAD USE] operator==
+        if (vec[i] == target) return i;
     }
     return -1;
 }
 
-// ============================================================================
-// OVERLOADED FORMAT FUNCTIONS — compile-time polymorphism (Lecture 7)
-// ============================================================================
+// ─────────────────────────────────────────────
+// FORMAT FUNCTIONS (overloading)
+// ─────────────────────────────────────────────
 
-/**
- * @brief Formats a double to 2 decimal places.
- * [COMPILE-TIME POLYMORPHISM] overloaded formatValue for double
- */
-inline std::string formatValue(double value) {
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(2) << value;
+// Formats a double to 2 decimal places. Example: 3.14159 → "3.14"
+inline string formatValue(double value) {
+    ostringstream oss;
+    oss << fixed << setprecision(2) << value;
     return oss.str();
 }
 
-/**
- * @brief Formats a long (KB value) with thousands separators.
- * [COMPILE-TIME POLYMORPHISM] overloaded formatValue for long
- */
-inline std::string formatValue(long valueKb) {
-    std::string s = std::to_string(valueKb);
-    // Insert commas every 3 digits from the right
+// Formats a long (KB value) with thousands separators. Example: 1024 → "1,024 KB"
+inline string formatValue(long valueKb) {
+    string s = to_string(valueKb);
+    // Insert a comma every 3 digits from the right
     int insertPos = static_cast<int>(s.size()) - 3;
     while (insertPos > 0) {
-        s.insert(static_cast<std::size_t>(insertPos), ",");
+        s.insert(static_cast<size_t>(insertPos), ",");
         insertPos -= 3;
     }
     return s + " KB";
 }
 
-/**
- * @brief Formats an int (PID) as "PID: XXXX".
- * [COMPILE-TIME POLYMORPHISM] overloaded formatValue for int
- */
-inline std::string formatValue(int pid) {
-    return "PID: " + std::to_string(pid);
+// Formats an int as a PID label. Example: 1234 → "PID: 1234"
+inline string formatValue(int pid) {
+    return "PID: " + to_string(pid);
 }
 
-/**
- * @brief Formats a double as a percentage string (e.g. "42.30%").
- * Convenience wrapper used by CpuInfo::toDisplayString().
- */
-inline std::string formatDouble(double value) {
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(1) << value;
+// Formats a double as a percentage string with 1 decimal. Example: 42.3 → "42.3"
+inline string formatDouble(double value) {
+    ostringstream oss;
+    oss << fixed << setprecision(1) << value;
     return oss.str();
 }
 
-/**
- * @brief Formats memory in KB to a readable string (MB if >= 1024).
- */
-inline std::string formatMemory(long kb) {
+// Converts KB to a readable string. Shows MB if value is 1024 KB or more.
+// Example: 2048 → "2.0 MB", 512 → "512 KB"
+inline string formatMemory(long kb) {
     if (kb >= 1024) {
-        std::ostringstream oss;
-        oss << std::fixed << std::setprecision(1)
+        ostringstream oss;
+        oss << fixed << setprecision(1)
             << (static_cast<double>(kb) / 1024.0) << " MB";
         return oss.str();
     }
-    return std::to_string(kb) + " KB";
+    return to_string(kb) + " KB";
 }
