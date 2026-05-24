@@ -28,7 +28,7 @@ using namespace std;
 // Keeps a value within [minVal, maxVal] range.
 // Example: clamp(150, 0, 100) returns 100
 template <typename T>
-T clamp(T value, T minVal, T maxVal) {
+T clampValue(T value, T minVal, T maxVal) {
     if (value < minVal) return minVal;
     if (value > maxVal) return maxVal;
     return value;

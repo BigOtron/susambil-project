@@ -113,7 +113,7 @@ void ProcessReader::readAll(ProcessList& processList) {
                 unsigned long long procTicks = readProcessCpuTicks(pid);
                 // [TEMPLATE] calculatePercent<unsigned long long>
                 double cpuPct = calculatePercent<unsigned long long>(procTicks, systemDelta);
-                cpuPct = clamp<double>(cpuPct, 0.0, 100.0);
+                cpuPct = clampValue<double>(cpuPct, 0.0, 100.0);
                 info.setCpuUsage(cpuPct);
 
                 processList.add(info);

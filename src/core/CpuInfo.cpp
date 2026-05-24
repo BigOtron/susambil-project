@@ -131,5 +131,5 @@ void CpuInfo::calculateUsage() {
         totalDelta - idleDelta, totalDelta);
 
     // [TEMPLATE] clamp result to valid range [0.0, 100.0]
-    this->usagePercent = clamp<double>(this->usagePercent, 0.0, 100.0);
+    this->usagePercent = clampValue<double>(this->usagePercent, 0.0, 100.0);
 }
