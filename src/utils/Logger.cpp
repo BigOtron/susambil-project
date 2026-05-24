@@ -1,21 +1,19 @@
 /*
  * Logger.cpp
  * ==========
- * Description: Implementation of the Logger singleton.
- *              Opens monitor.log on first getInstance() call, appends timestamped
- *              messages, and tracks a static message count.
+ * Implementation of the Logger singleton.
+ * Opens monitor.log on first use, writes timestamped messages,
+ * and keeps track of how many messages have been logged.
  *
- * OOP Concepts Demonstrated:
+ * OOP Concepts:
  *   - Static member initialization and lazy initialization
- *   - Private constructor (singleton)
+ *   - Private constructor (singleton pattern)
  *   - Static factory method
- *   - File output (ofstream)
- *   - Destructor (file close)
- *
- * Lecture Reference: Lecture 3 (Static Members), Lecture 10 (File I/O)
+ *   - File I/O with ofstream
+ *   - Destructor for clean file close
  *
  * Author: OOP 2 Project Team
- * Course: OOP 2 (MSC1052) — Spring 2026
+ * Course: OOP 2 — Spring 2026
  */
 
 #include "Logger.h"
@@ -24,75 +22,79 @@
 #include <iomanip>
 #include <sstream>
 
-// [STATIC MEMBER] definitions — must live in exactly one .cpp file
+using namespace std;
+
+// Static members must be defined in exactly one .cpp file
 Logger* Logger::instance     = nullptr;
 int     Logger::messageCount = 0;
 
-// [PRIVATE CONSTRUCTOR] called only by getInstance()
+// Private constructor — only getInstance() can call this
 Logger::Logger() {
-    // [FILE I/O] open log file in append mode so previous runs are preserved
-    logFile.open("monitor.log", std::ios::out | std::ios::app);
+    // Open in append mode so logs from previous runs are not lost
+    logFile.open("monitor.log", ios::out | ios::app);
     if (!logFile.is_open()) {
-        std::cerr << "[Logger] WARNING: cannot open monitor.log\n";
+        cerr << "[Logger] WARNING: cannot open monitor.log\n";
     }
     log("INFO", "=== Logger initialized ===");
 }
 
-// [DESTRUCTOR] closes the log file cleanly on program exit
+// Destructor — closes the file when the program exits
 Logger::~Logger() {
     if (logFile.is_open()) {
         log("INFO", "=== Logger shutting down ===");
-        logFile.close();   // [FILE I/O] explicit close
+        logFile.close();
     }
-    // Do NOT delete instance here — it would recurse; the OS cleans up on exit.
+    // We don't delete instance here — that would cause recursion.
+    // The OS reclaims memory on exit anyway.
 }
 
-// [STATIC MEMBER] lazy singleton factory — creates the instance on first call
+// Returns the single Logger instance, creating it on the very first call
 Logger* Logger::getInstance() {
     if (instance == nullptr) {
-        instance = new Logger();   // [STATIC MEMBER] stored in static pointer
+        instance = new Logger();
     }
     return instance;
 }
 
-// [STATIC MEMBER] returns the total count of messages logged
+// Returns how many messages have been logged so far
 int Logger::getMessageCount() {
-    return messageCount;   // [STATIC MEMBER] access without an object
+    return messageCount;
 }
 
-// Formats and writes a single log line to the file (and stderr for errors)
-void Logger::log(const std::string& level, const std::string& message) {
-    // Build a timestamp string
-    std::time_t now = std::time(nullptr);
-    std::tm* tm_info = std::localtime(&now);
-    std::ostringstream ts;
-    ts << std::put_time(tm_info, "%Y-%m-%d %H:%M:%S");
+// Builds a timestamped log line and writes it to the file.
+// ERROR level messages are also printed to the terminal.
+void Logger::log(const string& level, const string& message) {
+    // Build a readable timestamp like "2026-05-24 13:45:00"
+    time_t now = time(nullptr);
+    tm* tm_info = localtime(&now);
+    ostringstream ts;
+    ts << put_time(tm_info, "%Y-%m-%d %H:%M:%S");
 
-    std::string line = "[" + ts.str() + "] [" + level + "] " + message;
+    string line = "[" + ts.str() + "] [" + level + "] " + message;
 
-    // [FILE I/O] write to log file
+    // Write to the log file and flush immediately so nothing is lost on crash
     if (logFile.is_open()) {
         logFile << line << "\n";
-        logFile.flush();   // ensure it reaches disk immediately
+        logFile.flush();
     }
 
-    // Also print errors to stderr so they appear in the terminal
+    // Errors also go to stderr so the developer sees them in the terminal
     if (level == "ERROR") {
-        std::cerr << line << "\n";
+        cerr << line << "\n";
     }
 
-    // [STATIC MEMBER] increment the shared counter
     ++messageCount;
 }
 
-void Logger::logInfo(const std::string& msg) {
+// The three public helpers just forward to log() with the right level tag
+void Logger::logInfo(const string& msg) {
     log("INFO", msg);
 }
 
-void Logger::logError(const std::string& msg) {
+void Logger::logError(const string& msg) {
     log("ERROR", msg);
 }
 
-void Logger::logWarning(const std::string& msg) {
+void Logger::logWarning(const string& msg) {
     log("WARNING", msg);
 }
