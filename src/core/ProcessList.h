@@ -12,8 +12,6 @@
  *   - STL vector usage
  *   - Encapsulation
  *
- * Lecture Reference: Lecture 3 (Composition, Static), Lecture 4-5 (Operators)
- *
  * Author: OOP 2 Project Team
  * Course: OOP 2 (MSC1052) — Spring 2026
  */
@@ -33,29 +31,29 @@
  */
 class ProcessList {
 private:
-    // [COMPOSITION] ProcessList HAS-A vector of ProcessInfo objects
+    // composition: ProcessList HAS-A vector of ProcessInfo objects
     std::vector<ProcessInfo> processes;
 
-    // [STATIC MEMBER] shared counter — tracks total instances ever created
+    // static member: shared counter — tracks total instances ever created
     static int totalCreated;
 
 public:
-    // [DEFAULT CONSTRUCTOR]
+    // default constructor
     ProcessList();
 
-    // [DESTRUCTOR]
+    // destructor
     ~ProcessList();
 
-    // Add a process to the list
+    // Adding a process to the list
     void add(const ProcessInfo& p);
 
-    // Remove all entries
+    // Removing all entries
     void clear();
 
     // Number of processes currently stored
     int count() const;
 
-    // [CONST REFERENCE] avoids copying the entire vector
+    // cons reference that avoids copying the entire vector
     const std::vector<ProcessInfo>& getAll() const;
 
     // Sort descending by CPU usage — uses operator> on ProcessInfo
@@ -70,15 +68,15 @@ public:
     // Sort ascending by name
     void sortByName();
 
-    // Find process by PID — uses operator== on ProcessInfo; returns nullptr if missing
+    // Finding process by PID — uses operator== on ProcessInfo; returns nullptr if missing
     ProcessInfo* findByPid(int pid);
 
-    // [OPERATOR OVERLOAD] index access — non-const version
+    // operator overloading: index access — non-const version
     ProcessInfo& operator[](int index);
 
-    // [OPERATOR OVERLOAD] index access — const version
+    // operator overloading: index access — const version
     const ProcessInfo& operator[](int index) const;
 
-    // [STATIC MEMBER] returns how many ProcessList instances have been created
+    // static member: returns how many ProcessList instances have been created
     static int getTotalCreated();
 };
