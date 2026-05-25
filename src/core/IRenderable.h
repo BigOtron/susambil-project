@@ -1,15 +1,13 @@
 /*
- * IRenderable.h
+* IRenderable.h
  * =============
- * Description: Pure abstract interface for objects that can produce display strings.
- *              Implemented by any class that needs to render itself as text.
+ * A simple interface that enforces one rule: any class that implements it
+ * must be able to describe itself as a string.
  *
- * OOP Concepts Demonstrated:
- *   - Abstract class (interface)
- *   - Pure virtual functions
- *   - Virtual destructor
+ * Nothing complex here — just a contract. If your class claims to be
+ * IRenderable, it has to provide a toDisplayString() method. That's it.
  *
- * Lecture Reference: Lecture 9 (Abstract Classes & Templates)
+ * Covers material from Lecture 9 (Abstract Classes & Templates).
  *
  * Author: OOP 2 Project Team
  * Course: OOP 2 (MSC1052) — Spring 2026
@@ -21,20 +19,23 @@
 
 /**
  * @class IRenderable
- * @brief Pure abstract interface for objects that can produce a display string.
+ * @brief Any class that wants to produce a display string should implement this.
  *
- * Demonstrates: interface (pure abstract class), pure virtual functions.
- * Corresponds to: Lecture 9
+ * Think of it as a promise — if you inherit from IRenderable, you're
+ * promising that your class knows how to represent itself as text.
  */
-// [ABSTRACT CLASS] IRenderable — pure interface, cannot be instantiated
+// [ABSTRACT CLASS] Pure abstract class — you can't create an IRenderable directly, only inherit from it
 class IRenderable {
 public:
-    // [VIRTUAL DESTRUCTOR] required for safe polymorphic deletion
+    // [VIRTUAL DESTRUCTOR] Needs to be virtual so that when you delete through a base pointer,
+    // the right destructor gets called — standard rule for any polymorphic base class
     virtual ~IRenderable() = 0;
 
-    // [PURE VIRTUAL] returns a human-readable string representation
+    // [PURE VIRTUAL] Every subclass must implement this — return whatever makes sense as a
+    // human-readable summary of that object
     virtual std::string toDisplayString() const = 0;
 };
 
-// [ABSTRACT CLASS] definition of pure virtual destructor
+// [ABSTRACT CLASS] Pure virtual destructors are a bit unusual — C++ requires you to provide
+// a body for them even though they're pure virtual, so here it is
 inline IRenderable::~IRenderable() {}

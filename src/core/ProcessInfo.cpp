@@ -1,24 +1,28 @@
 /*
- * ProcessInfo.cpp
+* ProcessInfo.cpp
  * ===============
- * Description: Implementation of ProcessInfo — the most OOP-rich class in the project.
- *              Demonstrates constructors, destructors, copy constructor, operator
- *              overloads, friend function, this pointer, and inheritance.
+ * This file handles everything related to a single running process —
+ * how it's created, copied, updated, compared, and printed.
  *
- * OOP Concepts Demonstrated:
- *   - Default, parameterized, copy constructors
+ * It's the most "OOP-heavy" class in the whole project. If you want
+ * to see constructors, destructors, operator overloads, and inheritance
+ * all in one place, this is the file to look at.
+ *
+ * Things you'll find here:
+ *   - Default, parameterized, and copy constructors
  *   - Destructor
- *   - Operator overloading (<, ==, >, <<)
- *   - friend function (operator<<)
- *   - this pointer in setters
- *   - Inheritance (constructor chaining to SystemInfo)
+ *   - Operator overloads (<, ==, >, <<)
+ *   - A friend function for stream output
+ *   - Use of "this" pointer in setters
+ *   - Constructor chaining up to SystemInfo
  *   - Virtual function overrides
  *
- * Lecture Reference: Lectures 2–7
+ * Covers material from Lectures 2–7.
  *
  * Author: OOP 2 Project Team
  * Course: OOP 2 (MSC1052) — Spring 2026
  */
+
 
 #include "ProcessInfo.h"
 #include "../utils/Logger.h"
@@ -26,8 +30,8 @@
 #include <fstream>
 #include <sstream>
 
-// [DEFAULT CONSTRUCTOR] — creates an empty/invalid process placeholder
-// [CONSTRUCTOR CHAINING] calls SystemInfo with an empty path
+// Default constructor — makes a blank process object that doesn't point to anything real.
+// We still call the SystemInfo constructor, just with an empty path.
 ProcessInfo::ProcessInfo()
     : SystemInfo(""),
       pid(0), name("unknown"), cpuUsage(0.0),
@@ -35,8 +39,8 @@ ProcessInfo::ProcessInfo()
 {
 }
 
-// [PARAMETERIZED CONSTRUCTOR] — initialize with all known fields
-// [CONSTRUCTOR CHAINING] builds path like /proc/PID/ for base class
+// Main constructor — use this when you actually know the process details.
+// Builds the /proc/PID/ path automatically and passes it up to SystemInfo.
 ProcessInfo::ProcessInfo(int pid, const std::string& name, double cpu,
                          long mem, int threads, char state)
     : SystemInfo("/proc/" + std::to_string(pid)),
@@ -45,11 +49,11 @@ ProcessInfo::ProcessInfo(int pid, const std::string& name, double cpu,
 {
 }
 
-// [COPY CONSTRUCTOR] — deep copy of another ProcessInfo
-// All members are value types (int, string, double) so memberwise copy is sufficient,
-// but we demonstrate the explicit copy constructor as required by the course.
+// Copy constructor — makes an identical copy of an existing ProcessInfo.
+// Since all members are plain value types (int, string, etc.), a memberwise copy
+// would technically work fine, but we wrote this out explicitly for the course.
 ProcessInfo::ProcessInfo(const ProcessInfo& other)
-    : SystemInfo(other.sourcePath),   // [COPY CONSTRUCTOR] copy base class state
+    : SystemInfo(other.sourcePath),   // also copy the base class's path
       pid(other.pid),
       name(other.name),
       cpuUsage(other.cpuUsage),
@@ -57,10 +61,11 @@ ProcessInfo::ProcessInfo(const ProcessInfo& other)
       threadCount(other.threadCount),
       state(other.state)
 {
-    this->lastUpdated = other.lastUpdated;   // [this POINTER] copy protected member
+    this->lastUpdated = other.lastUpdated;   // copy the timestamp from the base class
 }
 
-// [DESTRUCTOR] — logs when a process entry is cleaned up
+// Destructor — nothing special to clean up here since we're not using
+// any raw pointers or dynamic memory.
 ProcessInfo::~ProcessInfo() {
     // Intentionally lightweight — no dynamic memory to release
 }
@@ -93,7 +98,8 @@ char ProcessInfo::getState() const {
 
 // ---- Setters ----------------------------------------------------------------
 
-// [this POINTER] used explicitly to distinguish member from parameter
+// Using "this->" here to make it obvious we're assigning to the member,
+// not some local variable with the same name.
 void ProcessInfo::setCpuUsage(double cpu) {
     this->cpuUsage = cpu;
 }
@@ -114,7 +120,8 @@ void ProcessInfo::setName(const std::string& n) {
     this->name = n;
 }
 
-// [OVERRIDE] reads /proc/PID/status to refresh memory, threads, state, name
+// Reads /proc/PID/status to refresh this process's info (name, memory, threads, state).
+// If the file can't be opened, we assume the process already exited and just move on.
 void ProcessInfo::update() {
     std::string statusPath = "/proc/" + std::to_string(this->pid) + "/status";
     std::ifstream statusFile(statusPath);
@@ -144,7 +151,7 @@ void ProcessInfo::update() {
     this->lastUpdated = time(nullptr);
 }
 
-// [OVERRIDE] produces a debug-friendly one-line description
+// Returns a short one-liner with the key stats — mostly useful for logging and debugging.
 std::string ProcessInfo::toDisplayString() const {
     return "PID=" + std::to_string(this->pid)
          + " NAME=" + this->name
@@ -154,23 +161,25 @@ std::string ProcessInfo::toDisplayString() const {
 
 // ---- Operator overloads -----------------------------------------------------
 
-// [OPERATOR OVERLOAD] less-than: compare by CPU usage — used by std::sort
+// Less-than compares by CPU usage — this is what std::sort uses by default.
 bool ProcessInfo::operator<(const ProcessInfo& other) const {
     return this->cpuUsage < other.cpuUsage;
 }
 
-// [OPERATOR OVERLOAD] equality: compare by PID — used by findIndex<T>
+// Equality checks by PID — two entries are the "same" process if they share a PID.
+// Used in findIndex<T> to locate a process in a list.
 bool ProcessInfo::operator==(const ProcessInfo& other) const {
     return this->pid == other.pid;
 }
 
-// [OPERATOR OVERLOAD] greater-than: convenience for descending CPU sort
+// Greater-than is just the flip of less-than — handy for sorting highest CPU first.
 bool ProcessInfo::operator>(const ProcessInfo& other) const {
     return this->cpuUsage > other.cpuUsage;
 }
 
-// [FRIEND FUNCTION] stream insertion operator — accesses private members directly
-// This is a non-member function declared friend in ProcessInfo
+// Stream output operator — lets you do things like: cout << myProcess;
+// Declared as a friend so it can reach the private members directly.
+// This is a free function, not a method, which is the standard way to do this in C++.
 std::ostream& operator<<(std::ostream& os, const ProcessInfo& p) {
     os << "[PID=" << p.pid
        << " NAME=" << p.name
