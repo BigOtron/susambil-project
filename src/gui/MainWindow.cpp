@@ -1,22 +1,8 @@
-/*
- * MainWindow.cpp
- * ==============
- * Description: Implementation of the main window. Builds all widgets programmatically,
- *              connects signals/slots, and drives the 1-second refresh loop.
- *
- * OOP Concepts Demonstrated:
- *   - Composition (cpuReader, processReader, processList constructed as members)
- *   - Signals & Slots (QTimer → onTimerTick, button → dialog)
- *   - Runtime polymorphism (vector<SystemInfo*> batch update)
- *   - Exception handling in the timer slot
- *   - Encapsulation (all Qt widget pointers private)
- *   - Static member access (Logger, ProcessList::getTotalCreated)
- *
- * Lecture Reference: Lectures 3, 7, 11, 12-14
- *
- * Author: OOP 2 Project Team
- * Course: OOP 2 (MSC1052) — Spring 2026
- */
+// MainWindow.cpp
+//  ==============
+//  Description: implementation of the main window. Builds all widgets programmatically,
+//               connects signals/slots, and drives the 1-second refresh loop.
+
 
 #include "MainWindow.h"
 #include "AboutDialog.h"
@@ -37,13 +23,9 @@
 #include <QFont>
 #include <sstream>
 
-// [PARAMETERIZED CONSTRUCTOR]
-// [COMPOSITION] member objects (cpuReader, processReader, processList) are
-// constructed here BEFORE the MainWindow constructor body runs — demonstrating
-// composition construction order.
+// parametrize constructor
 MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent),   // [INHERITANCE] constructor chaining to QMainWindow
-      // [COMPOSITION] composed objects initialized in member-init list
+    : QMainWindow(parent),
       cpuReader(),
       processReader(),
       processList(),
@@ -56,7 +38,7 @@ MainWindow::MainWindow(QWidget* parent)
       refreshRateCombo(nullptr),
       filterEdit(nullptr),
       refreshTimer(nullptr),
-      refreshIntervalMs(1000)   // [DEFAULT] 1-second refresh
+      refreshIntervalMs(1000)   // default 1 second
 {
     Logger::getInstance()->logInfo("MainWindow constructing");
 
@@ -66,21 +48,21 @@ MainWindow::MainWindow(QWidget* parent)
     setupConnections();
     applyDarkStyle();
 
-    // Start the refresh timer immediately
-    refreshTimer->start(refreshIntervalMs);   // [Qt SIGNALS & SLOTS] timer fires
+    // start the refresh timer immediately
+    refreshTimer->start(refreshIntervalMs);
 
-    Logger::getInstance()->logInfo("MainWindow ready");
+    Logger::getInstance()->logInfo("MainWindow ready"); // logger message about starting programm
 }
 
-// [DESTRUCTOR] Qt cleans up child widgets automatically via parent chain
+// destructor
 MainWindow::~MainWindow() {
     if (refreshTimer && refreshTimer->isActive()) {
         refreshTimer->stop();
     }
-    Logger::getInstance()->logInfo("MainWindow destroyed");
+    Logger::getInstance()->logInfo("MainWindow destroyed"); // logger message about closing the programm
 }
 
-// Builds the menu bar with File, View, and Help menus
+// build menu bar with File, View, and Help menus
 void MainWindow::setupMenuBar() {
     QMenuBar* mb = menuBar();
 
@@ -89,7 +71,7 @@ void MainWindow::setupMenuBar() {
     QAction* quitAction = fileMenu->addAction("&Quit");
     connect(quitAction, &QAction::triggered, this, &QMainWindow::close);
 
-    // View menu — refresh rate
+    // View menu - refresh rate
     QMenu* viewMenu = mb->addMenu("&View");
     QAction* refreshFast   = viewMenu->addAction("Refresh: 500ms");
     QAction* refreshNormal = viewMenu->addAction("Refresh: 1000ms");
@@ -97,7 +79,7 @@ void MainWindow::setupMenuBar() {
 
     connect(refreshFast,   &QAction::triggered, this, [this]{ onRefreshRateChanged(0); });
     connect(refreshNormal, &QAction::triggered, this, [this]{ onRefreshRateChanged(1); });
-    connect(refreshSlow,   &QAction::triggered, this, [this]{ onRefreshRateChanged(2); });
+    connect(refreshSlow,   &QAction::triggered, this, [this] { onRefreshRateChanged(2); });
 
     // Help menu
     QMenu* helpMenu = mb->addMenu("&Help");
@@ -105,9 +87,9 @@ void MainWindow::setupMenuBar() {
     connect(aboutAction, &QAction::triggered, this, &MainWindow::onAboutClicked);
 }
 
-// Programmatically builds all central widgets and layouts
+// build all central widget and layout
 void MainWindow::setupCentralWidget() {
-    // ---- Top info bar ----
+    // Top info bar
     QWidget* topBar = new QWidget(this);
     QHBoxLayout* topLayout = new QHBoxLayout(topBar);
     topLayout->setContentsMargins(8, 4, 8, 4);
@@ -146,7 +128,7 @@ void MainWindow::setupCentralWidget() {
     topLayout->addWidget(filterEdit);
 
     // ---- CPU graph ----
-    // [COMPOSITION] MainWindow creates and owns CpuGraphWidget
+    // composition of CpuGraphWidget
     cpuGraph = new CpuGraphWidget(this);
 
     QGroupBox* graphBox = new QGroupBox("CPU Usage History (last 60 s)", this);
@@ -154,8 +136,8 @@ void MainWindow::setupCentralWidget() {
     graphLayout->setContentsMargins(4, 12, 4, 4);
     graphLayout->addWidget(cpuGraph);
 
-    // ---- Process table ----
-    // [COMPOSITION] MainWindow creates and owns ProcessTableModel
+    // Process table
+    // composition of ProcessTableModel
     tableModel = new ProcessTableModel(this);
     tableView  = new QTableView(this);
     tableView->setModel(tableModel);
@@ -174,14 +156,14 @@ void MainWindow::setupCentralWidget() {
     tableLayout->setContentsMargins(4, 12, 4, 4);
     tableLayout->addWidget(tableView);
 
-    // ---- Splitter: graph on top, table below ----
+    // splitter: graph on top, table below
     QSplitter* splitter = new QSplitter(Qt::Vertical, this);
     splitter->addWidget(graphBox);
     splitter->addWidget(tableBox);
     splitter->setStretchFactor(0, 2);
     splitter->setStretchFactor(1, 5);
 
-    // ---- Assemble central widget ----
+    // collect central widget
     QWidget* central = new QWidget(this);
     QVBoxLayout* mainLayout = new QVBoxLayout(central);
     mainLayout->setContentsMargins(6, 6, 6, 6);
@@ -191,22 +173,20 @@ void MainWindow::setupCentralWidget() {
 
     setCentralWidget(central);
 
-    // Timer — Qt manages its lifetime as a child of this window
+    // timer - Qt manages its lifetime as child of this window
     refreshTimer = new QTimer(this);
 }
 
-// Sets up the status bar at the bottom
+// Sets up status bar at the bottom
 void MainWindow::setupStatusBar() {
     statusBar()->showMessage("Starting…");
 }
 
 // Connects all signals to their slots
 void MainWindow::setupConnections() {
-    // [Qt SIGNALS & SLOTS] QTimer::timeout → onTimerTick
     connect(refreshTimer, &QTimer::timeout,
             this,         &MainWindow::onTimerTick);
 
-    // [Qt SIGNALS & SLOTS] table row click → onProcessRowClicked
     connect(tableView->selectionModel(),
             &QItemSelectionModel::currentRowChanged,
             this,
@@ -214,24 +194,21 @@ void MainWindow::setupConnections() {
                 onProcessRowClicked(current);
             });
 
-    // [Qt SIGNALS & SLOTS] combo box index change → onRefreshRateChanged
     connect(refreshRateCombo,
             QOverload<int>::of(&QComboBox::currentIndexChanged),
             this,
             &MainWindow::onRefreshRateChanged);
 
-    // [Qt SIGNALS & SLOTS] filter text changed → onFilterChanged
     connect(filterEdit, &QLineEdit::textChanged,
             this,       &MainWindow::onFilterChanged);
 
-    // [Qt SIGNALS & SLOTS] column header click → sort
     connect(tableView->horizontalHeader(),
             &QHeaderView::sortIndicatorChanged,
             this,
             &MainWindow::onSortIndicatorChanged);
 }
 
-// Applies a dark theme stylesheet to the whole window
+// Applies dark theme stylesheet to the whole window
 void MainWindow::applyDarkStyle() {
     setStyleSheet(R"(
         QMainWindow, QWidget {
@@ -292,56 +269,43 @@ void MainWindow::applyDarkStyle() {
     )");
 }
 
-// ============================================================================
-// SLOTS
-// ============================================================================
-
-// [Qt SLOT] called every refreshIntervalMs by QTimer
-// [EXCEPTION HANDLING] catches MonitorException and std::exception
+// exceptions
 void MainWindow::onTimerTick() {
     try {
-        // ---- CPU update ----
-        cpuReader.readData();   // [COMPOSITION] call composed object's method
+        // CPU update
+        cpuReader.readData();   // call composed object's method
         double cpuPct = cpuReader.getCpuData().getUsagePercent();
 
-        // [POLYMORPHISM] demonstrate runtime polymorphism with vector<SystemInfo*>
-        // We collect updatable objects via their base-class pointer and call update()
+        // We collect updatable objects throught their base-class pointer and call update()
         std::vector<SystemInfo*> monitors;
-        // CpuInfo IS-A SystemInfo — safe upcast
-        // (getCpuData returns const ref; we use update() via cpuReader.readData above)
-        // We show the concept explicitly here using a local CpuInfo for demonstration:
-        // monitors.push_back(&cpuInfoLocal); monitors[0]->update(); — shown in comment
-        // The actual refresh is done above via cpuReader for thread-safety.
 
         updateCpuDisplay(cpuPct);
 
-        // ---- Process update ----
-        processReader.readAll(processList);   // [COMPOSITION]
+        // process update
+        processReader.readAll(processList);
         updateProcessTable();
 
-        // ---- Status bar ----
+        // status bar
         statusBar()->showMessage(
             QString("CPU: %1%  |  Processes: %2  |  Log messages: %3")
                 .arg(cpuPct, 0, 'f', 1)
                 .arg(processList.count())
-                .arg(Logger::getMessageCount())   // [STATIC MEMBER] access
+                .arg(Logger::getMessageCount())   // static member access
         );
 
     } catch (const MonitorException& e) {
-        // [EXCEPTION] catch custom application exception
         Logger::getInstance()->logError(e.what());
         statusBar()->showMessage(QString("Error: ") + e.what());
     } catch (const std::exception& e) {
-        // [EXCEPTION] catch all remaining standard exceptions
         Logger::getInstance()->logError(std::string("Timer tick: ") + e.what());
     }
 }
 
-// Updates the CPU progress bar and label
+// updates the CPU progress bar and label
 void MainWindow::updateCpuDisplay(double pct) {
     cpuLabel->setText(QString("CPU: %1%").arg(pct, 0, 'f', 1));
     cpuBar->setValue(static_cast<int>(pct));
-    cpuGraph->addDataPoint(pct);   // [COMPOSITION] push to graph widget
+    cpuGraph->addDataPoint(pct);   // push to graph widget
 
     // Color the bar red when CPU > 80%
     if (pct > 80.0) {
@@ -353,7 +317,7 @@ void MainWindow::updateCpuDisplay(double pct) {
     }
 }
 
-// Pushes the current process snapshot into the table model
+// pushes the current process into the table model
 void MainWindow::updateProcessTable() {
     // Apply name filter if one is set
     const QString filterText = filterEdit->text().trimmed();
@@ -374,20 +338,20 @@ void MainWindow::updateProcessTable() {
         QString("Processes: %1").arg(processList.count()));
 }
 
-// [SLOT] shows a tooltip-style status message when a table row is clicked
+// show tooltip-style status message when table row is clicked
 void MainWindow::onProcessRowClicked(const QModelIndex& index) {
     if (!index.isValid()) return;
     int row = index.row();
     if (row < 0 || row >= tableModel->rowCount()) return;
 
     ProcessInfo proc = tableModel->getProcess(row);
-    // [FRIEND FUNCTION / operator<<] use stream output for the status bar info
+    // use stream output for the status bar info
     std::ostringstream oss;
-    oss << proc;   // [FRIEND FUNCTION] calls operator<<(ostream&, ProcessInfo&)
+    oss << proc;   // calls operator<<(ostream&, ProcessInfo&)
     statusBar()->showMessage(QString::fromStdString(oss.str()), 4000);
 }
 
-// [SLOT] changes the QTimer interval based on the combo box selection
+// changes the QTimer interval based on the combo box selection
 void MainWindow::onRefreshRateChanged(int comboIndex) {
     static const int rates[] = {500, 1000, 2000};
     if (comboIndex < 0 || comboIndex > 2) return;
@@ -398,12 +362,12 @@ void MainWindow::onRefreshRateChanged(int comboIndex) {
         "Refresh rate changed to " + std::to_string(refreshIntervalMs) + " ms");
 }
 
-// [SLOT] re-applies the process table filter whenever the user types
+// re-applies the process table filter whenever the user types
 void MainWindow::onFilterChanged(const QString& /*text*/) {
     updateProcessTable();
 }
 
-// [SLOT] sorts the process list when a column header is clicked
+// sorts the process list when a column header is clicked
 void MainWindow::onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order) {
     Q_UNUSED(order)
     switch (logicalIndex) {
@@ -416,8 +380,8 @@ void MainWindow::onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order) {
     updateProcessTable();
 }
 
-// [SLOT] shows the About modal dialog
+// shows the About modal dialog
 void MainWindow::onAboutClicked() {
-    AboutDialog dlg(this);   // [COMPOSITION] MainWindow creates an AboutDialog
-    dlg.exec();              // [Qt] blocks until dialog is closed
+    AboutDialog dlg(this);   // MainWindow creates an AboutDialog
+    dlg.exec();              // blocks until dialog is closed
 }

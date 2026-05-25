@@ -1,44 +1,26 @@
-/*
- * ProcessTableModel.h
- * ===================
- * Description: Qt Model/View table model that exposes a vector<ProcessInfo> to
- *              QTableView. Implements the required QAbstractTableModel interface.
- *
- * OOP Concepts Demonstrated:
- *   - Inheritance (derives from QAbstractTableModel)
- *   - Composition (has-a vector<ProcessInfo>)
- *   - Override of Qt pure virtual functions
- *   - Encapsulation
- *
- * Lecture Reference: Lecture 12-14 (Qt GUI, Model/View)
- *
- * Author: OOP 2 Project Team
- * Course: OOP 2 (MSC1052) — Spring 2026
- */
+// ProcessTableModel.h
+// ===================
+// Description: This class holds list of processes and shows them
+//              in a table on the screen. It works with Qt's table system.
+// in this header file we use QAbstractTableModel - it is for create QT tables
 
 #pragma once
 
 #include <QAbstractTableModel>
 #include <QColor>
 #include <vector>
-#include "../core/ProcessInfo.h"
+#include "../core/ProcessInfo.h" // using Process Info header file
 
-/**
- * @class ProcessTableModel
- * @brief Bridges ProcessInfo data to Qt's Model/View table display.
- *
- * Demonstrates: Qt Model/View architecture, inheritance, virtual overrides.
- * Corresponds to: Lectures 12-14
- */
-// [INHERITANCE] ProcessTableModel IS-A QAbstractTableModel
+
 class ProcessTableModel : public QAbstractTableModel {
-    Q_OBJECT   // [Qt] required macro for signals/slots
+    Q_OBJECT
 
 private:
-    // [COMPOSITION] model HAS-A local copy of the process vector
+    // composition of processes from FrecessInfo class
     std::vector<ProcessInfo> processes;
 
-    // Column index constants for readability
+    // indexing all process name. for one thing for name index number is 1
+    // all count is 6
     static const int COL_PID     = 0;
     static const int COL_NAME    = 1;
     static const int COL_CPU     = 2;
@@ -48,36 +30,30 @@ private:
     static const int COL_COUNT   = 6;
 
 public:
-    // [PARAMETERIZED CONSTRUCTOR] parent passed to QAbstractTableModel
+    // param. contructor parent to QAbs table model
     explicit ProcessTableModel(QObject* parent = nullptr);
 
-    // [DESTRUCTOR]
+    // Desctuctor.
     ~ProcessTableModel() override;
 
-    // ---- QAbstractTableModel required overrides ----
-
-    // [OVERRIDE] returns number of rows (= number of processes)
+    // QModelIndex - it is like excel. For example B3 or F6 and QModelIndex work like that and we use row and colimns
+    //
+    // return count of rows and it is equal to count of processes.
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    // [OVERRIDE] returns number of columns (6: PID, Name, CPU, Mem, Threads, State)
+    // return count of columns and it is for example PID, Memory and ...
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    // [OVERRIDE] returns cell data for the given role
+    // return cell data for given role.
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    // [OVERRIDE] returns column header labels
+    // returns column header label
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
 
-    // ---- Custom public methods ----
-
-    /**
-     * @brief Replaces the internal process list and triggers a full table refresh.
-     */
+    // setter func to set all process by list
     void setProcessList(const std::vector<ProcessInfo>& list);
 
-    /**
-     * @brief Returns the ProcessInfo at the given row index.
-     */
+    // getter func and return ProcessInfo type
     ProcessInfo getProcess(int row) const;
 };
