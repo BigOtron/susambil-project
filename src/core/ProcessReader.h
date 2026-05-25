@@ -11,10 +11,8 @@
  *   - Exception handling
  *   - Static helper method
  *
- * Lecture Reference: Lecture 9 (Abstract), Lecture 10 (File I/O), Lecture 11 (Exceptions)
- *
  * Author: OOP 2 Project Team
- * Course: OOP 2 (MSC1052) — Spring 2026
+ * Course: OOP 2 — Spring 2026
  */
 
 #pragma once
@@ -30,7 +28,7 @@
  * Demonstrates: interface implementation, composition, file I/O, exceptions.
  * Corresponds to: Lectures 9, 10, 11
  */
-// [INHERITANCE] ProcessReader implements IDataReader
+// (Inheritance) ProcessReader implements IDataReader
 class ProcessReader : public IDataReader {
 private:
     static const std::string PROC_DIR;   // "/proc"
@@ -43,22 +41,22 @@ private:
     unsigned long long currSystemTotal;   // current total system ticks
 
 public:
-    // [DEFAULT CONSTRUCTOR]
+    // default constructor
     ProcessReader();
 
-    // [DESTRUCTOR]
+    // destructor
     ~ProcessReader() override;
 
-    // [OVERRIDE] checks /proc is accessible
+    // overriding: checks /proc is accessible
     bool openSource() override;
 
-    // [OVERRIDE] scans /proc and populates the provided ProcessList
+    // overriding: scans /proc and populates the provided ProcessList
     void readData() override;
 
-    // [OVERRIDE] no persistent handle to close
+    // overriding: no persistent handle to close
     void closeSource() override;
 
-    // [OVERRIDE] returns true if /proc is a readable directory
+    // overriding: returns true if /proc is a readable directory
     bool isAvailable() const override;
 
     /**

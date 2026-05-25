@@ -11,10 +11,8 @@
  *   - Operator overloading (operator[])
  *   - Composition
  *
- * Lecture Reference: Lecture 3 (Static Members), Lecture 4-5 (Operators)
- *
  * Author: OOP 2 Project Team
- * Course: OOP 2 (MSC1052) — Spring 2026
+ * Course: OOP 2 — Spring 2026
  */
 
 #include "ProcessList.h"
@@ -22,18 +20,18 @@
 #include <algorithm>
 #include <stdexcept>
 
-// [STATIC MEMBER] definition outside the class — required for non-inline static
+// static member: definition outside the class — required for non-inline static
 int ProcessList::totalCreated = 0;
 
-// [DEFAULT CONSTRUCTOR] increments the static counter on each instance creation
+// default constructor: increments the static counter on each instance creation
 ProcessList::ProcessList() {
-    // [STATIC MEMBER] increment shared counter
+    // static member: increment shared counter
     ++ProcessList::totalCreated;
     Logger::getInstance()->logInfo("ProcessList created (total: "
                                    + std::to_string(ProcessList::totalCreated) + ")");
 }
 
-// [DESTRUCTOR] logs cleanup
+// destructor: logs cleanup
 ProcessList::~ProcessList() {
     Logger::getInstance()->logInfo("ProcessList destroyed");
 }
@@ -53,7 +51,7 @@ int ProcessList::count() const {
     return static_cast<int>(processes.size());
 }
 
-// [CONST REFERENCE] returns internal vector without copying it
+// const reference that returns internal vector without copying it
 const std::vector<ProcessInfo>& ProcessList::getAll() const {
     return this->processes;
 }
@@ -103,7 +101,7 @@ ProcessInfo* ProcessList::findByPid(int pid) {
     return nullptr;
 }
 
-// [OPERATOR OVERLOAD] index access with bounds check
+// operator overloading: index access with bounds check
 ProcessInfo& ProcessList::operator[](int index) {
     if (index < 0 || index >= static_cast<int>(processes.size())) {
         throw std::out_of_range("ProcessList index out of range: " + std::to_string(index));
@@ -111,7 +109,7 @@ ProcessInfo& ProcessList::operator[](int index) {
     return processes[static_cast<std::size_t>(index)];
 }
 
-// [OPERATOR OVERLOAD] const index access
+// operator overloading: const index access
 const ProcessInfo& ProcessList::operator[](int index) const {
     if (index < 0 || index >= static_cast<int>(processes.size())) {
         throw std::out_of_range("ProcessList index out of range: " + std::to_string(index));
@@ -119,7 +117,7 @@ const ProcessInfo& ProcessList::operator[](int index) const {
     return processes[static_cast<std::size_t>(index)];
 }
 
-// [STATIC MEMBER] returns the shared creation counter
+// static member: returns the shared creation counter
 int ProcessList::getTotalCreated() {
     return ProcessList::totalCreated;
 }

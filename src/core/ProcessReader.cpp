@@ -11,8 +11,6 @@
  *   - Static member and static helper function
  *   - Composition (populates a ProcessList — has-a relationship at call site)
  *
- * Lecture Reference: Lecture 10 (File I/O), Lecture 11 (Exceptions)
- *
  * Author: OOP 2 Project Team
  * Course: OOP 2 (MSC1052) — Spring 2026
  */
@@ -27,22 +25,22 @@
 #include <dirent.h>
 #include <cctype>
 
-// [STATIC MEMBER] path to the /proc virtual filesystem
+// static member: path to the /proc virtual filesystem
 const std::string ProcessReader::PROC_DIR = "/proc";
 
-// [DEFAULT CONSTRUCTOR]
+// default constructor
 ProcessReader::ProcessReader()
     : prevSystemTotal(0), currSystemTotal(0)
 {
     Logger::getInstance()->logInfo("ProcessReader constructed");
 }
 
-// [DESTRUCTOR]
+// destructor
 ProcessReader::~ProcessReader() {
     Logger::getInstance()->logInfo("ProcessReader destroyed");
 }
 
-// [OVERRIDE] check /proc is accessible
+// overriding: check /proc is accessible
 bool ProcessReader::openSource() {
     DIR* dir = opendir(PROC_DIR.c_str());
     if (!dir) return false;
@@ -50,15 +48,15 @@ bool ProcessReader::openSource() {
     return true;
 }
 
-// [OVERRIDE] simple single-read; use readAll() for the full scan
+// overriding: simple single-read; use readAll() for the full scan
 void ProcessReader::readData() {
     // Intentionally thin — readAll() is the main entry point
 }
 
-// [OVERRIDE] nothing to close (we open/close inside readAll per-iteration)
+// overriding: nothing to close (we open/close inside readAll per-iteration)
 void ProcessReader::closeSource() {}
 
-// [OVERRIDE] check /proc directory is accessible
+// overriding: check /proc directory is accessible
 bool ProcessReader::isAvailable() const {
     DIR* dir = opendir(PROC_DIR.c_str());
     if (!dir) return false;
@@ -67,12 +65,12 @@ bool ProcessReader::isAvailable() const {
 }
 
 // Primary method — scans /proc, fills processList, then sorts by CPU descending
-// [EXCEPTION HANDLING] wraps the entire scan in try-catch
+// Exception handling: wraps the entire scan in try-catch
 void ProcessReader::readAll(ProcessList& processList) {
     try {
         processList.clear();
 
-        // Read total CPU ticks from /proc/stat to compute per-process CPU%
+        // Reading total CPU ticks from /proc/stat to compute per-process CPU%
         std::ifstream statFile("/proc/stat");
         if (!statFile.is_open()) {
             throw FileReadException("/proc/stat");
@@ -90,7 +88,7 @@ void ProcessReader::readAll(ProcessList& processList) {
         unsigned long long systemDelta = currSystemTotal - prevSystemTotal;
         if (systemDelta == 0) systemDelta = 1;   // avoid division by zero
 
-        // Open /proc directory and iterate over numeric entries
+        // Opening /proc directory and iterate over numeric entries
         DIR* procDir = opendir(PROC_DIR.c_str());
         if (!procDir) {
             throw FileReadException(PROC_DIR);
@@ -106,12 +104,12 @@ void ProcessReader::readAll(ProcessList& processList) {
             int pid = std::stoi(dirName);
 
             try {
-                // [EXCEPTION] inner try so one bad process doesn't abort the scan
+                // Exception: inner try so one bad process doesn't abort the scan
                 ProcessInfo info = readProcessStatus(pid);
 
-                // Compute this process's CPU share using /proc/PID/stat
+                // Computing this process's CPU share using /proc/PID/stat
                 unsigned long long procTicks = readProcessCpuTicks(pid);
-                // [TEMPLATE] calculatePercent<unsigned long long>
+                // Template: calculatePercent<unsigned long long>
                 double cpuPct = calculatePercent<unsigned long long>(procTicks, systemDelta);
                 cpuPct = clampValue<double>(cpuPct, 0.0, 100.0);
                 info.setCpuUsage(cpuPct);
@@ -144,7 +142,7 @@ void ProcessReader::readAll(ProcessList& processList) {
 ProcessInfo ProcessReader::readProcessStatus(int pid) {
     std::string path = PROC_DIR + "/" + std::to_string(pid) + "/status";
 
-    // [FILE I/O] open the status file
+    // (FILE I/O) open the status file
     std::ifstream file(path);
     if (!file.is_open()) {
         throw ProcessNotFoundException(pid);
@@ -172,7 +170,7 @@ ProcessInfo ProcessReader::readProcessStatus(int pid) {
             ss >> threads;
         }
     }
-    file.close();   // [FILE I/O] explicit close
+    file.close();   // (FILE I/O) explicit close
 
     if (name.empty()) {
         throw ParseException("Empty Name in PID " + std::to_string(pid) + " status");
@@ -193,7 +191,7 @@ unsigned long long ProcessReader::readProcessCpuTicks(int pid) {
     std::getline(file, content);
     file.close();
 
-    // Find the closing ')' of the comm field — name may contain spaces
+    // Finding the closing ')' of the comm field — name may contain spaces
     std::size_t commEnd = content.rfind(')');
     if (commEnd == std::string::npos) return 0;
 
