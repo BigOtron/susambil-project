@@ -1,19 +1,12 @@
 /*
- * ProcessInfo.h
+* ProcessInfo.h
  * =============
- * Description: Represents a single Linux process entry read from /proc/[pid]/.
- *              Demonstrates the most comprehensive set of OOP concepts in the project.
+ * This header defines the ProcessInfo class — one process entry from /proc/[pid]/.
+ * It's the most feature-rich class in the project, so if you're looking for
+ * examples of OOP concepts in action, start here.
  *
- * OOP Concepts Demonstrated:
- *   - Encapsulation (private members + getters/setters)
- *   - Default, parameterized, and copy constructors
- *   - Destructor
- *   - Operator overloading (<, ==, <<)
- *   - friend function
- *   - this pointer
- *   - Inheritance from SystemInfo
- *
- * Lecture Reference: Lectures 2–7
+ * You'll find: encapsulation, all three constructor types, a destructor,
+ * operator overloads, a friend function, this pointer, and inheritance.
  *
  * Author: OOP 2 Project Team
  * Course: OOP 2 (MSC1052) — Spring 2026
@@ -26,37 +19,36 @@
 #include <iostream>
 
 /**
- * @class ProcessInfo
- * @brief Stores all information about a single Linux process.
+ * Holds all the data we care about for a single running Linux process.
  *
- * Demonstrates: encapsulation, constructors/destructors, copy constructor,
- * operator overloading, friend functions, inheritance.
- *
- * Corresponds to: Lectures 2, 3, 4, 5, 6
+ * Inherits from SystemInfo which handles the /proc path and last-updated timestamp.
+ * This class adds the process-specific stuff: PID, name, CPU, memory, threads, state.
  */
-// [INHERITANCE] ProcessInfo IS-A SystemInfo
+
+// [INHERITANCE] ProcessInfo extends SystemInfo — every process IS a system info entry
 class ProcessInfo : public SystemInfo {
 private:
-    // [ENCAPSULATION] all data members are private
-    int         pid;          // Process ID
-    std::string name;         // Process name (from /proc/PID/status Name:)
-    double      cpuUsage;     // CPU usage percentage
-    long        memoryKb;     // Resident memory in kilobytes (VmRSS)
-    int         threadCount;  // Number of threads (from Threads: field)
-    char        state;        // Process state: R, S, D, Z, T
+    // [ENCAPSULATION] Keep these private so nothing outside the class can mess with them directly
+    int         pid;          // Process ID — unique identifier assigned by the OS
+    std::string name;         // Process name, e.g. "firefox" or "bash"
+    double      cpuUsage;     // How much CPU this process is currently eating (%)
+    long        memoryKb;     // Physical RAM in use, pulled from VmRSS in /proc
+    int         threadCount;  // How many threads this process is running
+    char        state;        // One-letter state: R=running, S=sleeping, Z=zombie, etc.
 
 public:
-    // [DEFAULT CONSTRUCTOR] creates an empty/invalid process entry
+    // [DEFAULT CONSTRUCTOR] Creates a blank, invalid placeholder — useful when you need the object
+    // before you actually have data to fill it with
     ProcessInfo();
 
-    // [PARAMETERIZED CONSTRUCTOR] initialize with all fields
+    // [PARAMETERIZED CONSTRUCTOR] The one you'll use most of the time — pass in everything you know upfront
     ProcessInfo(int pid, const std::string& name, double cpu,
                 long mem, int threads, char state);
 
-    // [COPY CONSTRUCTOR] deep copy of another ProcessInfo
+    // [COPY CONSTRUCTOR] Makes an independent copy of another ProcessInfo object
     ProcessInfo(const ProcessInfo& other);
 
-    // [DESTRUCTOR] logs cleanup
+    // [DESTRUCTOR] nothing dramatic, just here to complete the class properly
     ~ProcessInfo() override;
 
     // ---- Getters ----
@@ -74,26 +66,27 @@ public:
     void setState(char s);
     void setName(const std::string& n);
 
-    // [OVERRIDE] refreshes this process's data from /proc/PID/
+    // [OVERRIDE] Re-reads /proc/PID/status and updates all fields with fresh values
     void update() override;
 
-    // [OVERRIDE] returns "PID=X NAME=Y CPU=Z%"
+    // [OVERRIDE] Returns a compact summary string like "PID=123 NAME=bash CPU=0.5%"
     std::string toDisplayString() const override;
 
     // ---- Operator overloads ----
 
-    // [OPERATOR OVERLOAD] compare by CPU usage for sorting
+    // [OPERATOR OVERLOAD] Sort by CPU usage — lower CPU comes first
     bool operator<(const ProcessInfo& other) const;
 
-    // [OPERATOR OVERLOAD] compare by PID for equality checks
+    // [OPERATOR OVERLOAD] Two processes are "the same" if they have the same PID
     bool operator==(const ProcessInfo& other) const;
 
-    // [OPERATOR OVERLOAD] greater-than by CPU usage
+    // [OPERATOR OVERLOAD] Higher CPU comes first — useful for descending sort
     bool operator>(const ProcessInfo& other) const;
 
-    // [FRIEND FUNCTION] stream output — accesses private members directly
+    // [FRIEND FUNCTION] Lets you write: cout << myProcess; and get a nicely formatted output
+    // Needs to be a friend so it can read the private fields
     friend std::ostream& operator<<(std::ostream& os, const ProcessInfo& p);
 
-    // [FRIEND CLASS] ProcessList may access private members for efficiency
+    // [FRIEND CLASS] // ProcessList gets direct access to our internals to avoid unnecessary getter overhead
     friend class ProcessList;
 };
