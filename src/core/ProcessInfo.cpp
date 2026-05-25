@@ -17,8 +17,6 @@
  *   - Constructor chaining up to SystemInfo
  *   - Virtual function overrides
  *
- * Covers material from Lectures 2–7.
- *
  * Author: OOP 2 Project Team
  * Course: OOP 2 (MSC1052) — Spring 2026
  */

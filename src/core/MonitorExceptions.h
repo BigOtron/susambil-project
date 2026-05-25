@@ -6,8 +6,6 @@
  * types for each failure scenario — file read errors, parse errors, missing processes.
  * That way the caller knows exactly what went wrong and can handle it accordingly.
  *
- * Covers material from Lecture 11 (Exception Handling).
- *
  * Author: OOP 2 Project Team
  * Course: OOP 2 (MSC1052) — Spring 2026
  */
@@ -19,8 +17,7 @@
 #include <string>
 
 /**
- * @class MonitorException
- * @brief The root exception for everything in this application.
+ * The root exception for everything in this application.
  *
  * All other exceptions in this file inherit from this one, so you can
  * catch just this type if you want to handle any monitor-related error
@@ -45,8 +42,7 @@ public:
 };
 
 /**
- * @class FileReadException
- * @brief Thrown when we try to open a /proc file and it fails.
+ * Thrown when we try to open a /proc file and it fails.
  *
  * Stores the path that caused the problem so the error message is actually useful
  * — "cannot read file: /proc/1234/status" beats a generic "file error".
@@ -68,8 +64,7 @@ public:
 };
 
 /**
- * @class ParseException
- * @brief Thrown when a /proc file opens fine but the content isn't what we expected.
+ * Thrown when a /proc file opens fine but the content isn't what we expected.
  *
  * A separate type from FileReadException because the cause is different —
  * the file exists, we just couldn't make sense of what's inside it.
@@ -85,8 +80,7 @@ public:
 };
 
 /**
- * @class ProcessNotFoundException
- * @brief Thrown when we look up a PID that no longer exists.
+ * Thrown when we look up a PID that no longer exists.
  *
  * Processes can die at any moment, so this will happen in normal usage —
  * not just on bugs. The PID is stored separately so callers can log or

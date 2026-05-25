@@ -8,8 +8,6 @@
  * You'll find: encapsulation, all three constructor types, a destructor,
  * operator overloads, a friend function, this pointer, and inheritance.
  *
- * Covers material from Lectures 2–7.
- *
  * Author: OOP 2 Project Team
  * Course: OOP 2 (MSC1052) — Spring 2026
  */
@@ -21,8 +19,7 @@
 #include <iostream>
 
 /**
- * @class ProcessInfo
- * @brief Holds all the data we care about for a single running Linux process.
+ * Holds all the data we care about for a single running Linux process.
  *
  * Inherits from SystemInfo which handles the /proc path and last-updated timestamp.
  * This class adds the process-specific stuff: PID, name, CPU, memory, threads, state.

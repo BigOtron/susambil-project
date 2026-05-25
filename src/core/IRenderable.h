@@ -7,8 +7,6 @@
  * Nothing complex here — just a contract. If your class claims to be
  * IRenderable, it has to provide a toDisplayString() method. That's it.
  *
- * Covers material from Lecture 9 (Abstract Classes & Templates).
- *
  * Author: OOP 2 Project Team
  * Course: OOP 2 (MSC1052) — Spring 2026
  */
@@ -18,8 +16,7 @@
 #include <string>
 
 /**
- * @class IRenderable
- * @brief Any class that wants to produce a display string should implement this.
+ * Any class that wants to produce a display string should implement this.
  *
  * Think of it as a promise — if you inherit from IRenderable, you're
  * promising that your class knows how to represent itself as text.
