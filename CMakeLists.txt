@@ -16,7 +16,6 @@ file(GLOB_RECURSE SOURCES
 add_executable(SystemMonitor
     main.cpp
   	${SOURCES}
-		src/core/CpuReader.h
 )
 
 target_include_directories(SystemMonitor PRIVATE src)
