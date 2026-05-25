@@ -1,22 +1,6 @@
-/*
- * MainWindow.h
- * ============
- * Description: Main application window. Ties all core and GUI components together.
- *              Uses a QTimer to refresh data every 1000ms via signal/slot.
- *
- * OOP Concepts Demonstrated:
- *   - Inheritance (QMainWindow)
- *   - Composition (has-a CpuReader, ProcessReader, ProcessList, etc.)
- *   - Signals & Slots (Qt mechanism)
- *   - Encapsulation
- *   - Runtime polymorphism (vector<SystemInfo*> for batch update)
- *   - Exception handling in slots
- *
- * Lecture Reference: Lectures 3 (Composition), 7 (Polymorphism), 12-14 (Qt GUI)
- *
- * Author: OOP 2 Project Team
- * Course: OOP 2 (MSC1052) — Spring 2026
- */
+// MainWindow.h
+ // ============
+ // Description: Collect all as Main window and use Qtimer for refresh.
 
 #pragma once
 
@@ -40,59 +24,48 @@
 #include "CpuGraphWidget.h"
 #include "ProcessTableModel.h"
 
-/**
- * @class MainWindow
- * @brief Main application window — composes all subsystems and drives the UI.
- *
- * Demonstrates: composition, Qt inheritance, signals/slots, polymorphism.
- * Corresponds to: Lectures 3, 7, 12-14
- */
-// [INHERITANCE] MainWindow IS-A QMainWindow
+
+// MainWindow
 class MainWindow : public QMainWindow {
-    Q_OBJECT   // [Qt] required for signals/slots
+    Q_OBJECT
 
 public:
-    // [PARAMETERIZED CONSTRUCTOR]
+    // parametrize constrictor
     explicit MainWindow(QWidget* parent = nullptr);
 
-    // [DESTRUCTOR]
+    // Destructor
     ~MainWindow() override;
 
 private slots:
-    // [Qt SIGNALS & SLOTS] called by QTimer every refreshIntervalMs milliseconds
+    // slots for QT timer
     void onTimerTick();
 
-    // Called when user clicks a row in the process table
+    // called when user clicks row in the process table
     void onProcessRowClicked(const QModelIndex& index);
 
-    // Called when the user changes the refresh rate combo box
+    // called when user changes refresh rate combo box
     void onRefreshRateChanged(int comboIndex);
 
-    // Called when the user types in the filter box
+    // called when user types in filter box
     void onFilterChanged(const QString& text);
 
-    // Called when a column header is clicked for sorting
+    // Called when column header is clicked for sorting
     void onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order);
 
-    // Shows the About dialog
+    // Show About dialog
     void onAboutClicked();
 
 private:
-    // ---- Composed subsystem objects (has-a relationships) ----
 
-    // [COMPOSITION] MainWindow HAS-A CpuReader
+    // compositions of MainWindow
+
     CpuReader cpuReader;
 
-    // [COMPOSITION] MainWindow HAS-A ProcessReader
     ProcessReader processReader;
 
-    // [COMPOSITION] MainWindow HAS-A ProcessList
     ProcessList processList;
 
-    // [POLYMORPHISM] base-class pointers for batch update — runtime dispatch
-    // vector<SystemInfo*> monitors;  // demonstrated in onTimerTick
-
-    // ---- Qt-owned widget pointers (Qt manages lifetime via parent chain) ----
+    // Qt pointers
     CpuGraphWidget*    cpuGraph;
     ProcessTableModel* tableModel;
     QTableView*        tableView;
@@ -103,17 +76,17 @@ private:
     QLineEdit*         filterEdit;
     QTimer*            refreshTimer;
 
-    // Current refresh interval in milliseconds (default: 1000)
+    // Current refresh interval in milliseconds default: 1000
     int refreshIntervalMs;
 
-    // ---- Private setup helpers ----
+    // private setup helpers
     void setupMenuBar();
     void setupCentralWidget();
     void setupStatusBar();
     void setupConnections();
     void applyDarkStyle();
 
-    // ---- Private update helpers ----
+    // private update helpers
     void updateCpuDisplay(double pct);
     void updateProcessTable();
 };
