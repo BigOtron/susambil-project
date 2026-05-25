@@ -12,8 +12,6 @@
  *   - Pure virtual functions
  *   - Inheritance foundation
  *
- * Lecture Reference: Lecture 6 (Inheritance), Lecture 9 (Abstract Classes)
- *
  * Author: OOP 2 Project Team
  * Course: OOP 2 (MSC1052) — Spring 2026
  */
@@ -33,29 +31,29 @@
  *
  * Corresponds to: Lectures 6, 9
  */
-// [ABSTRACT CLASS] SystemInfo — base of the inheritance hierarchy
+// (Abstract class) SystemInfo — base of the inheritance hierarchy
 class SystemInfo : public IRenderable {
 protected:
-    // [ENCAPSULATION] protected — accessible by derived classes only
+    // Encapsulation: protected — accessible by derived classes only
     std::string sourcePath;    // the /proc/... path this object reads from
     time_t lastUpdated;        // Unix timestamp of the last successful read
 
 public:
-    // [PARAMETERIZED CONSTRUCTOR] initializes source path and timestamp
+    // Parametrized constructor: initializes source path and timestamp
     explicit SystemInfo(const std::string& path);
 
-    // [VIRTUAL DESTRUCTOR] ensures correct destructor chain when deleting via base pointer
+    // Virtual destructor: ensures correct destructor chain when deleting via base pointer
     virtual ~SystemInfo();
 
-    // [GETTER] returns the /proc source path
+    // Getter: returns the /proc source path
     std::string getSourcePath() const;
 
-    // [GETTER] returns timestamp of last update
+    // Getter: returns timestamp of last update
     time_t getLastUpdated() const;
 
-    // [PURE VIRTUAL] derived classes must refresh their data from /proc
+    // Pure virtual function: derived classes must refresh their data from /proc
     virtual void update() = 0;
 
-    // [PURE VIRTUAL] inherited from IRenderable — produce a display string
+    // Pure virtual function: inherited from IRenderable — produce a display string
     std::string toDisplayString() const override = 0;
 };
